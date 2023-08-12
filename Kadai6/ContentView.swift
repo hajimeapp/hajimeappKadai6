@@ -8,10 +8,25 @@
 import SwiftUI
 
 struct ContentView: View {
+    struct AlertInfo {
+        let questionNumber: Int
+        let sliderValue: Int
+
+        var message: String {
+            let firstLine: String
+            if questionNumber == sliderValue {
+                firstLine = "あたり！"
+            } else {
+                firstLine = "はずれ！"
+            }
+            return "\(firstLine)\nあなたの値：\(sliderValue)"
+        }
+    }
+
     @State private var value = 50.0
     @State private var questionNumber = Int.random(in: 1...100)
     @State private var isShowResult = false
-    @State var resultTitle = "あたり"
+    @State var alertInfo: AlertInfo?
     var body: some View {
         VStack {
             Text("\(questionNumber)")
@@ -24,11 +39,11 @@ struct ContentView: View {
                 Text("100")
             }
             Button {
-                if questionNumber == Int(value) {
-                    resultTitle = "あたり"
-                } else {
-                    resultTitle = "はずれ"
-                }
+                alertInfo = AlertInfo(
+                    questionNumber: questionNumber,
+                    sliderValue: Int(value)
+                )
+
                 isShowResult = true
             } label: {
                 Text("判定！")
@@ -37,9 +52,19 @@ struct ContentView: View {
             Spacer()
         }
         .padding()
-        .alert(isPresented: $isShowResult) {
-            Alert(title: Text("結果"), message: Text("\(resultTitle)！\nあなたの値：\(Int(value))"), dismissButton: .default(Text("再挑戦"), action: {questionNumber = Int.random(in: 1...100)}))
-        }
+        .alert(
+            "結果",
+            isPresented: $isShowResult,
+            presenting: alertInfo,
+            actions: { _ in
+                Button("再挑戦", action: {
+                    questionNumber = Int.random(in: 1...100)
+                })
+            },
+            message: { alertInfo in
+                Text(alertInfo.message)
+            }
+        )
     }
 }
 
