@@ -11,7 +11,7 @@ struct ContentView: View {
     @State private var value = 50.0
     @State private var questionNumber = Int.random(in: 1...100)
     @State private var isShowResult = false
-    @State var resultTitle = "あたり"
+    @State var alertMessage: String?
     var body: some View {
         VStack {
             Text("\(questionNumber)")
@@ -24,11 +24,13 @@ struct ContentView: View {
                 Text("100")
             }
             Button {
+                let firstLine: String
                 if questionNumber == Int(value) {
-                    resultTitle = "あたり"
+                    firstLine = "あたり！"
                 } else {
-                    resultTitle = "はずれ"
+                    firstLine = "はずれ！"
                 }
+                alertMessage = "\(firstLine)\nあなたの値：\(Int(value))"
                 isShowResult = true
             } label: {
                 Text("判定！")
@@ -37,9 +39,19 @@ struct ContentView: View {
             Spacer()
         }
         .padding()
-        .alert(isPresented: $isShowResult) {
-            Alert(title: Text("結果"), message: Text("\(resultTitle)！\nあなたの値：\(Int(value))"), dismissButton: .default(Text("再挑戦"), action: {questionNumber = Int.random(in: 1...100)}))
-        }
+        .alert(
+            "結果",
+            isPresented: $isShowResult,
+            presenting: alertMessage,
+            actions: { _ in
+                Button("再挑戦", action: {
+                    questionNumber = Int.random(in: 1...100)
+                })
+            },
+            message: {
+                Text($0)
+            }
+        )
     }
 }
 
